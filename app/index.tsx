@@ -8,15 +8,22 @@ export default function Index() {
 
   if (!isInitialized) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.navy }}>
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: Colors.navy,
+      }}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
 
+  // Already logged in — skip splash and onboarding entirely
   if (user) {
     return <Redirect href="/(app)/map" />;
   }
 
+  // First time — show splash
   return <Redirect href="/(auth)/splash" />;
 }

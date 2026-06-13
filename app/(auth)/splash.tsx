@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { router } from 'expo-router';
+import { useAuthStore } from '../../src/store/auth.store';
 import { Colors } from '../../src/constants';
 
 export default function Splash() {
+  const { user, isInitialized } = useAuthStore();
   const opacity = new Animated.Value(0);
   const scale = new Animated.Value(0.8);
 
@@ -22,11 +24,15 @@ export default function Splash() {
     ]).start();
 
     const timer = setTimeout(() => {
-      router.replace('/(auth)/onboarding');
+      if (isInitialized && user) {
+        router.replace('/(app)/map');
+      } else {
+        router.replace('/(auth)/onboarding');
+      }
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isInitialized, user]);
 
   return (
     <View style={styles.container}>
@@ -52,9 +58,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
-    alignItems: 'center',
-  },
+  content: { alignItems: 'center' },
   logoCircle: {
     width: 100,
     height: 100,
@@ -66,33 +70,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  bolt: {
-    fontSize: 48,
-  },
-  wordmark: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  volt: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    letterSpacing: 2,
-  },
-  node: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    letterSpacing: 2,
-  },
-  tagline: {
-    fontSize: 11,
-    color: Colors.primary,
-    letterSpacing: 3,
-    marginBottom: 8,
-  },
-  byline: {
-    fontSize: 12,
-    color: Colors.offline,
-  },
+  bolt: { fontSize: 48 },
+  wordmark: { flexDirection: 'row', marginBottom: 12 },
+  volt: { fontSize: 48, fontWeight: 'bold', color: '#FFFFFF', letterSpacing: 2 },
+  node: { fontSize: 48, fontWeight: 'bold', color: Colors.primary, letterSpacing: 2 },
+  tagline: { fontSize: 11, color: Colors.primary, letterSpacing: 3, marginBottom: 8 },
+  byline: { fontSize: 12, color: Colors.offline },
 });

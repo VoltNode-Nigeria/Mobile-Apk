@@ -73,6 +73,12 @@ export default function AppLayout() {
           ),
         }}
       />
+
+      {/* Hide all dynamic route screens from tab bar */}
+      <Tabs.Screen name="station/[id]" options={{ href: null }} />
+      <Tabs.Screen name="session-start/[id]" options={{ href: null }} />
+      <Tabs.Screen name="active-session/[id]" options={{ href: null }} />
+      <Tabs.Screen name="session-complete/[id]" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -83,9 +89,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 6,
   },
-  emoji: {
-    fontSize: 20,
-  },
+  emoji: { fontSize: 20 },
   label: {
     fontSize: 10,
     marginTop: 2,
