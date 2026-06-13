@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useStation, useWallet, useGlobalRate } from '../../../src/lib/hooks';
 import { api } from '../../../src/lib/api';
@@ -34,7 +35,12 @@ function PaymentMethodCard({
       onPress={onSelect}
     >
       <View style={styles.methodHeader}>
-        <Text style={styles.methodEmoji}>{method === 'WALLET' ? '💳' : '🏦'}</Text>
+        <Ionicons
+          name={method === 'WALLET' ? 'wallet' : 'card'}
+          size={24}
+          color={Colors.primary}
+          style={styles.methodEmoji}
+        />
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Text style={styles.methodTitle}>
             {method === 'WALLET' ? 'Pay with Wallet' : 'Pay with Card'}
@@ -167,7 +173,7 @@ export default function SessionStart() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backArrow}>
-          <Text style={styles.backArrowText}>←</Text>
+          <Ionicons name="arrow-back" size={24} color={Colors.navy} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Start Charging</Text>
         <View style={{ width: 40 }} />
@@ -206,7 +212,7 @@ export default function SessionStart() {
                 <Text style={styles.availableText}>Available</Text>
               </View>
               {selectedBay?.id === bay.id && (
-                <Text style={styles.selectedCheck}>✓</Text>
+                <Ionicons name="checkmark-circle" size={18} color={Colors.primary} />
               )}
             </TouchableOpacity>
           ))
@@ -243,7 +249,15 @@ export default function SessionStart() {
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryKey}>Payment</Text>
-          <Text style={styles.summaryVal}>{paymentMethod === 'WALLET' ? '💳 Wallet Credits' : '🏦 Card'}</Text>
+          <View style={styles.paymentSummary}>
+            <Ionicons
+              name={paymentMethod === 'WALLET' ? 'wallet' : 'card'}
+              size={14}
+              color={Colors.navy}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.summaryVal}>{paymentMethod === 'WALLET' ? 'Wallet Credits' : 'Card'}</Text>
+          </View>
         </View>
         {paymentMethod === 'WALLET' && (
           <View style={styles.summaryRow}>
@@ -273,9 +287,12 @@ export default function SessionStart() {
           {isStarting ? (
             <ActivityIndicator color={Colors.navy} />
           ) : (
-            <Text style={styles.ctaBtnText}>
-              {selectedBay ? `⚡ Start Session — ${selectedBay.label}` : '⚡ Confirm & Start Session'}
-            </Text>
+            <View style={styles.ctaBtnContent}>
+              <Ionicons name="flash" size={18} color={Colors.navy} style={{ marginRight: 8 }} />
+              <Text style={styles.ctaBtnText}>
+                {selectedBay ? `Start Session — ${selectedBay.label}` : 'Confirm & Start Session'}
+              </Text>
+            </View>
           )}
         </TouchableOpacity>
       </View>
@@ -408,5 +425,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaBtnDisabled: { opacity: 0.5 },
+  ctaBtnContent: { flexDirection: 'row', alignItems: 'center' },
   ctaBtnText: { color: Colors.navy, fontSize: 16, fontWeight: 'bold' },
+  paymentSummary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }
 });

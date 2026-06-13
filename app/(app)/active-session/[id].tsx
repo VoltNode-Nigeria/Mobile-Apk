@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   ActivityIndicator, Alert, Animated,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSession } from '../../../src/lib/hooks';
 import { api } from '../../../src/lib/api';
@@ -139,15 +140,24 @@ export default function ActiveSession() {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statBox}>
-          <Text style={styles.statValue}>
-            {isWallet ? '💳 Wallet' : '🏦 Card'}
-          </Text>
+          <View style={styles.paymentMethodRow}>
+            <Ionicons
+              name={isWallet ? 'wallet' : 'card'}
+              size={14}
+              color={Colors.navy}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.paymentMethodText}>{isWallet ? 'Wallet' : 'Card'}</Text>
+          </View>
           <Text style={styles.statLabel}>Payment</Text>
         </View>
       </View>
 
       {/* Live update note */}
-      <Text style={styles.liveNote}>⚡ Updates every 10 seconds</Text>
+      <View style={styles.liveNoteRow}>
+        <Ionicons name="flash" size={14} color={Colors.primary} style={{ marginRight: 6 }} />
+        <Text style={styles.liveNote}>Updates every 10 seconds</Text>
+      </View>
 
       {/* End Session Button */}
       <View style={styles.endContainer}>
@@ -159,7 +169,10 @@ export default function ActiveSession() {
           {isEnding ? (
             <ActivityIndicator color={Colors.background} />
           ) : (
-            <Text style={styles.endBtnText}>⏹ End Session</Text>
+            <View style={styles.endBtnContent}>
+              <Ionicons name="stop-circle" size={20} color={Colors.background} style={{ marginRight: 8 }} />
+              <Text style={styles.endBtnText}>End Session</Text>
+            </View>
           )}
         </TouchableOpacity>
       </View>
@@ -285,11 +298,15 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 11, color: Colors.textSecondary },
   statDivider: { width: 1, backgroundColor: Colors.border },
 
+  liveNoteRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   liveNote: {
-    textAlign: 'center',
     fontSize: 12,
     color: Colors.offline,
-    marginBottom: 24,
   },
 
   endContainer: { paddingHorizontal: 24, paddingBottom: 40 },
@@ -299,7 +316,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
   },
+  endBtnContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   endBtnText: { color: Colors.background, fontSize: 16, fontWeight: 'bold' },
+  paymentMethodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  paymentMethodText: { fontSize: 13, fontWeight: '600', color: Colors.navy },
 
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,

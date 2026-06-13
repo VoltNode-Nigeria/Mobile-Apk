@@ -1,6 +1,7 @@
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../src/store/auth.store';
 import { useSessionHistory } from '../../src/lib/hooks';
@@ -16,16 +17,25 @@ function SessionCard({ session }: { session: Session }) {
     <View style={styles.card}>
       <View style={styles.cardLeft}>
         <View style={styles.iconCircle}>
-          <Text style={styles.iconEmoji}>⚡</Text>
+          <Ionicons name="flash" size={18} color={Colors.background} />
         </View>
       </View>
       <View style={styles.cardMiddle}>
         <Text style={styles.stationName}>
           {session.station?.name ?? 'Unknown Station'}
         </Text>
-        <Text style={styles.sessionMeta}>
-          {session.bay?.label ?? ''} · {session.paymentMethod === 'WALLET' ? '💳 Wallet' : '🏦 Card'}
-        </Text>
+        <View style={styles.sessionMetaRow}>
+          <Text style={styles.sessionMeta}>{session.bay?.label ?? ''}</Text>
+          <View style={styles.paymentLabelRow}>
+            <Ionicons
+              name={session.paymentMethod === 'WALLET' ? 'wallet' : 'card'}
+              size={12}
+              color={Colors.textSecondary}
+              style={{ marginRight: 4 }}
+            />
+            <Text style={styles.sessionMeta}>{session.paymentMethod === 'WALLET' ? 'Wallet' : 'Card'}</Text>
+          </View>
+        </View>
         <Text style={styles.sessionDate}>
           {session.createdAt
             ? new Date(session.createdAt).toLocaleDateString('en-NG', {
@@ -84,7 +94,7 @@ export default function History() {
 
       {completed.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>⚡</Text>
+          <Ionicons name="flash-outline" size={64} color={Colors.border} style={styles.emptyIcon} />
           <Text style={styles.emptyTitle}>No sessions yet</Text>
           <Text style={styles.emptySub}>Start charging to see your history here</Text>
           <TouchableOpacity
@@ -144,8 +154,10 @@ const styles = StyleSheet.create({
   },
   iconEmoji: { fontSize: 18 },
   cardMiddle: { flex: 1 },
+  sessionMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 2 },
+  paymentLabelRow: { flexDirection: 'row', alignItems: 'center' },
   stationName: { fontSize: 14, fontWeight: '600', color: Colors.navy, marginBottom: 2 },
-  sessionMeta: { fontSize: 12, color: Colors.textSecondary, marginBottom: 2 },
+  sessionMeta: { fontSize: 12, color: Colors.textSecondary },
   sessionDate: { fontSize: 11, color: Colors.offline },
   cardRight: { alignItems: 'flex-end' },
   kwhText: { fontSize: 13, fontWeight: '600', color: Colors.navy, marginBottom: 2 },
@@ -158,6 +170,7 @@ const styles = StyleSheet.create({
   paidTextAmber: { color: Colors.warning },
 
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
+  emptyIcon: { marginBottom: 16 },
   emptyEmoji: { fontSize: 64, marginBottom: 16 },
   emptyTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.navy, marginBottom: 8 },
   emptySub: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginBottom: 24 },

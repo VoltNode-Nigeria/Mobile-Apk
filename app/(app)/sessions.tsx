@@ -1,6 +1,7 @@
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../src/store/auth.store';
 import { useMyActiveSessions } from '../../src/lib/hooks';
@@ -28,7 +29,7 @@ export default function Sessions() {
 
       {sessions.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>⚡</Text>
+          <Ionicons name="flash-outline" size={64} color={Colors.border} style={styles.emptyIcon} />
           <Text style={styles.emptyTitle}>No Active Sessions</Text>
           <Text style={styles.emptySub}>Start charging at a nearby station</Text>
           <TouchableOpacity
@@ -68,14 +69,21 @@ export default function Sessions() {
                   <Text style={styles.statLabel}>Cost</Text>
                 </View>
                 <View style={styles.stat}>
-                  <Text style={styles.statValue}>
-                    {item.paymentMethod === 'WALLET' ? '💳' : '🏦'}
-                  </Text>
-                  <Text style={styles.statLabel}>{item.paymentMethod}</Text>
+                  <View style={styles.paymentMethodRow}>
+                    <Ionicons
+                      name={item.paymentMethod === 'WALLET' ? 'wallet' : 'card'}
+                      size={14}
+                      color={Colors.textSecondary}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={styles.statValue}>{item.paymentMethod}</Text>
+                  </View>
+                  <Text style={styles.statLabel}>Payment</Text>
                 </View>
               </View>
               <View style={styles.viewBtn}>
-                <Text style={styles.viewBtnText}>View Live Session →</Text>
+                <Text style={styles.viewBtnText}>View Live Session</Text>
+                <Ionicons name="arrow-forward" size={14} color={Colors.primary} style={{ marginLeft: 8 }} />
               </View>
             </TouchableOpacity>
           )}
@@ -128,13 +136,15 @@ const styles = StyleSheet.create({
 
   statsRow: { flexDirection: 'row', marginBottom: 12 },
   stat: { flex: 1, alignItems: 'center' },
+  paymentMethodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   statValue: { fontSize: 16, fontWeight: 'bold', color: Colors.navy },
   statLabel: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
 
-  viewBtn: { backgroundColor: Colors.navy, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
+  viewBtn: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.navy, borderRadius: 10, paddingVertical: 10 },
   viewBtnText: { color: Colors.primary, fontWeight: '600', fontSize: 13 },
 
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
+  emptyIcon: { marginBottom: 16 },
   emptyEmoji: { fontSize: 64, marginBottom: 16 },
   emptyTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.navy, marginBottom: 8 },
   emptySub: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginBottom: 24 },

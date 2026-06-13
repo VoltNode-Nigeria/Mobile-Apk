@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSession } from '../../../src/lib/hooks';
 import { Colors } from '../../../src/constants';
@@ -29,7 +30,7 @@ function AnimatedCheck() {
 
   return (
     <Animated.View style={[styles.checkCircle, { transform: [{ scale }], opacity }]}>
-      <Text style={styles.checkEmoji}>✓</Text>
+      <Ionicons name="checkmark" size={44} color={Colors.success} />
     </Animated.View>
   );
 }
@@ -142,10 +143,18 @@ export default function SessionComplete() {
           value={formatNaira(session?.costNaira)}
           highlight
         />
-        <ReceiptRow
-          label="Payment Method"
-          value={isWallet ? '💳 Wallet Credits' : '🏦 Card'}
-        />
+        <View style={styles.receiptRow}>
+          <Text style={styles.receiptLabel}>Payment Method</Text>
+          <View style={styles.paymentMethodRow}>
+            <Ionicons
+              name={isWallet ? 'wallet' : 'card'}
+              size={14}
+              color={Colors.textSecondary}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.paymentMethodText}>{isWallet ? 'Wallet Credits' : 'Card'}</Text>
+          </View>
+        </View>
 
         {/* Payment Status Badge */}
         <View style={styles.statusRow}>
@@ -166,7 +175,7 @@ export default function SessionComplete() {
                 ? styles.statusTextFailed
                 : styles.statusTextPending,
             ]}>
-              {paymentStatus === 'SUCCESS' ? '✓ PAID' : paymentStatus === 'FAILED' ? '✗ FAILED' : '⏳ PENDING'}
+              {paymentStatus === 'SUCCESS' ? 'PAID' : paymentStatus === 'FAILED' ? 'FAILED' : 'PENDING'}
             </Text>
           </View>
         </View>
@@ -207,6 +216,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   checkEmoji: { fontSize: 40, color: Colors.success },
+  paymentMethodRow: { flexDirection: 'row', alignItems: 'center' },
+  paymentMethodText: { fontSize: 14, color: Colors.textSecondary, fontWeight: '500' },
   successTitle: {
     fontSize: 28,
     fontWeight: 'bold',

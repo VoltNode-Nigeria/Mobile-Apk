@@ -2,6 +2,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Image,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useStation } from '../../../src/lib/hooks';
 import { Colors } from '../../../src/constants';
@@ -64,7 +65,7 @@ export default function StationDetail() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backArrow}>
-          <Text style={styles.backArrowText}>←</Text>
+          <Ionicons name="arrow-back" size={24} color={Colors.navy} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Station Detail</Text>
         <View style={{ width: 40 }} />
@@ -93,7 +94,7 @@ export default function StationDetail() {
         <View style={styles.infoHeader}>
           <View style={{ flex: 1 }}>
             <Text style={styles.stationName}>{station.name}</Text>
-            <Text style={styles.stationAddress}>📍 {station.address}</Text>
+            <Ionicons name="location" size={14} color={Colors.textSecondary} />
           </View>
           <View style={styles.openBadge}>
             <Text style={styles.openText}>Open</Text>
@@ -151,9 +152,12 @@ export default function StationDetail() {
             style={styles.ctaBtn}
             onPress={() => router.push(`/(app)/session-start/${station.id}`)}
           >
-            <Text style={styles.ctaBtnText}>
-              ⚡ Start Charging — {availableBays.length} Bay{availableBays.length !== 1 ? 's' : ''} Available
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name="flash" size={18} color={Colors.navy} />
+              <Text style={styles.ctaBtnText}>
+                Start Charging — {availableBays.length} Bay{availableBays.length !== 1 ? 's' : ''} Available
+              </Text>
+            </View>
           </TouchableOpacity>
         )}
       </View>

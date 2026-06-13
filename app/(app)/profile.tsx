@@ -1,24 +1,30 @@
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../src/store/auth.store';
 import { useWallet } from '../../src/lib/hooks';
 import { Colors } from '../../src/constants';
 
 function MenuItem({
-  emoji, label, onPress, danger,
+  iconName, label, onPress, danger,
 }: {
-  emoji: string;
+  iconName: React.ComponentProps<typeof Ionicons>['name'];
   label: string;
   onPress: () => void;
   danger?: boolean;
 }) {
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-      <Text style={styles.menuEmoji}>{emoji}</Text>
+      <Ionicons
+        name={iconName}
+        size={20}
+        color={danger ? Colors.error : Colors.textSecondary}
+        style={{ marginRight: 12 }}
+      />
       <Text style={[styles.menuLabel, danger && styles.menuLabelDanger]}>{label}</Text>
-      <Text style={styles.menuChevron}>›</Text>
+      <Ionicons name="chevron-forward" size={18} color={Colors.border} />
     </TouchableOpacity>
   );
 }
@@ -76,22 +82,25 @@ export default function Profile() {
           {wallet?.balance?.toFixed(3) ?? '0.000'} credits
         </Text>
         <TouchableOpacity onPress={() => router.push('/(app)/wallet')}>
-          <Text style={styles.walletLink}>Top Up →</Text>
+          <View style={styles.topUpLink}>
+            <Text style={styles.walletLink}>Top Up</Text>
+            <Ionicons name="arrow-forward" size={14} color={Colors.primary} style={{ marginLeft: 6 }} />
+          </View>
         </TouchableOpacity>
       </View>
 
       {/* Menu */}
       <View style={styles.menuSection}>
         <Text style={styles.menuTitle}>Account</Text>
-        <MenuItem emoji="📋" label="Session History" onPress={() => router.push('/(app)/history')} />
-        <MenuItem emoji="💳" label="Wallet & Credits" onPress={() => router.push('/(app)/wallet')} />
-        <MenuItem emoji="🔔" label="Notifications" onPress={() => Alert.alert('Coming Soon', 'Push notifications coming in the next update')} />
-        <MenuItem emoji="❓" label="Help & Support" onPress={() => Alert.alert('Support', 'Email: support@voltnode.com')} />
-        <MenuItem emoji="📄" label="Terms & Privacy" onPress={() => Alert.alert('Terms', 'Terms and privacy policy available at voltnode.com')} />
+        <MenuItem iconName="list-outline" label="Session History" onPress={() => router.push('/(app)/history')} />
+        <MenuItem iconName="wallet-outline" label="Wallet & Credits" onPress={() => router.push('/(app)/wallet')} />
+        <MenuItem iconName="notifications-outline" label="Notifications" onPress={() => Alert.alert('Coming Soon', 'Push notifications coming in the next update')} />
+        <MenuItem iconName="help-circle-outline" label="Help & Support" onPress={() => Alert.alert('Support', 'Email: support@voltnode.com')} />
+        <MenuItem iconName="document-text-outline" label="Terms & Privacy" onPress={() => Alert.alert('Terms', 'Terms and privacy policy available at voltnode.com')} />
       </View>
 
       <View style={styles.menuSection}>
-        <MenuItem emoji="🚪" label="Log Out" onPress={handleLogout} danger />
+        <MenuItem iconName="log-out-outline" label="Log Out" onPress={handleLogout} danger />
       </View>
 
       <Text style={styles.version}>VoltNode v1.0.0 · By HydroGEM Advisory</Text>
@@ -151,6 +160,7 @@ const styles = StyleSheet.create({
   walletLabel: { color: Colors.offline, fontSize: 13, flex: 1 },
   walletBalance: { color: Colors.primary, fontSize: 16, fontWeight: 'bold', marginRight: 12 },
   walletLink: { color: Colors.primary, fontSize: 14, fontWeight: '600' },
+  topUpLink: { flexDirection: 'row', alignItems: 'center' },
 
   menuSection: {
     marginHorizontal: 16,

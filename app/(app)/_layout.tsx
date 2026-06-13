@@ -1,11 +1,20 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants';
 
-function TabIcon({ focused, label, emoji }: { focused: boolean; label: string; emoji: string }) {
+function TabIcon({ focused, label, name }: {
+  focused: boolean;
+  label: string;
+  name: React.ComponentProps<typeof Ionicons>['name'];
+}) {
   return (
     <View style={styles.tabIcon}>
-      <Text style={styles.emoji}>{emoji}</Text>
+      <Ionicons
+        name={name}
+        size={26}
+        color={focused ? Colors.primary : Colors.offline}
+      />
       <Text style={[styles.label, { color: focused ? Colors.primary : Colors.offline }]}>
         {label}
       </Text>
@@ -22,7 +31,13 @@ export default function AppLayout() {
           backgroundColor: Colors.navy,
           borderTopColor: Colors.circuitBlue,
           height: 65,
-          paddingBottom: 8,
+          paddingBottom: 0,
+          paddingTop: 8,
+          alignContent: 'center',
+          alignItems: 'center',
+        },
+        tabBarItemStyle: {
+          minWidth: 60,
         },
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.offline,
@@ -33,7 +48,7 @@ export default function AppLayout() {
         options={{
           tabBarLabel: '',
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} label="Map" emoji="🗺️" />
+            <TabIcon focused={focused} label="Map" name={focused ? 'map' : 'map-outline'} />
           ),
         }}
       />
@@ -42,7 +57,7 @@ export default function AppLayout() {
         options={{
           tabBarLabel: '',
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} label="Sessions" emoji="⚡" />
+            <TabIcon focused={focused} label="Sessions" name={focused ? 'flash' : 'flash-outline'} />
           ),
         }}
       />
@@ -51,7 +66,7 @@ export default function AppLayout() {
         options={{
           tabBarLabel: '',
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} label="History" emoji="📋" />
+            <TabIcon focused={focused} label="History" name={focused ? 'list' : 'list-outline'} />
           ),
         }}
       />
@@ -60,7 +75,7 @@ export default function AppLayout() {
         options={{
           tabBarLabel: '',
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} label="Wallet" emoji="💳" />
+            <TabIcon focused={focused} label="Wallet" name={focused ? 'wallet' : 'wallet-outline'} />
           ),
         }}
       />
@@ -69,12 +84,10 @@ export default function AppLayout() {
         options={{
           tabBarLabel: '',
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} label="Profile" emoji="👤" />
+            <TabIcon focused={focused} label="Profile" name={focused ? 'person' : 'person-outline'} />
           ),
         }}
       />
-
-      {/* Hide all dynamic route screens from tab bar */}
       <Tabs.Screen name="station/[id]" options={{ href: null }} />
       <Tabs.Screen name="session-start/[id]" options={{ href: null }} />
       <Tabs.Screen name="active-session/[id]" options={{ href: null }} />
@@ -87,12 +100,14 @@ const styles = StyleSheet.create({
   tabIcon: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 6,
+    paddingTop: 4,
+    width: 70,
   },
-  emoji: { fontSize: 20 },
   label: {
     fontSize: 10,
     marginTop: 2,
     fontWeight: '500',
+    textAlign: 'center',
+    width: 70,
   },
 });

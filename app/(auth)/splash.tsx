@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/auth.store';
 import { Colors } from '../../src/constants';
 
@@ -11,16 +12,8 @@ export default function Splash() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scale, {
-        toValue: 1,
-        friction: 4,
-        useNativeDriver: true,
-      }),
+      Animated.timing(opacity, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, friction: 4, useNativeDriver: true }),
     ]).start();
 
     const timer = setTimeout(() => {
@@ -38,7 +31,7 @@ export default function Splash() {
     <View style={styles.container}>
       <Animated.View style={[styles.content, { opacity, transform: [{ scale }] }]}>
         <View style={styles.logoCircle}>
-          <Text style={styles.bolt}>⚡</Text>
+          <Ionicons name="flash" size={52} color={Colors.primary} />
         </View>
         <View style={styles.wordmark}>
           <Text style={styles.volt}>VOLT</Text>
@@ -52,25 +45,14 @@ export default function Splash() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.navy,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  container: { flex: 1, backgroundColor: Colors.navy, justifyContent: 'center', alignItems: 'center' },
   content: { alignItems: 'center' },
   logoCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 100, height: 100, borderRadius: 50,
     backgroundColor: Colors.circuitBlue,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
+    borderWidth: 2, borderColor: Colors.primary,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 24,
   },
-  bolt: { fontSize: 48 },
   wordmark: { flexDirection: 'row', marginBottom: 12 },
   volt: { fontSize: 48, fontWeight: 'bold', color: '#FFFFFF', letterSpacing: 2 },
   node: { fontSize: 48, fontWeight: 'bold', color: Colors.primary, letterSpacing: 2 },

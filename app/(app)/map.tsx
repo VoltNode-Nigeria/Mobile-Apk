@@ -8,6 +8,7 @@ import { useStations } from '../../src/lib/hooks';
 import { useAuthStore } from '../../src/store/auth.store';
 import { Colors } from '../../src/constants';
 import type { Station, Bay } from '../../src/lib/types';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,7 +51,7 @@ function StationPin({
       style={[styles.pin, { top: pos.top, left: pos.left, borderColor: color }]}
       onPress={onPress}
     >
-      <Text style={styles.pinEmoji}>⚡</Text>
+      <Ionicons name="flash" size={20} color={Colors.primary} />
       <View style={[styles.pinDot, { backgroundColor: color }]} />
     </TouchableOpacity>
   );
@@ -71,10 +72,13 @@ function StationBottomSheet({
       <View style={styles.sheetHeader}>
         <View style={{ flex: 1 }}>
           <Text style={styles.sheetName}>{station.name}</Text>
-          <Text style={styles.sheetAddress}>📍 {station.address}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="location" size={13} color={Colors.textSecondary} />
+            <Text style={styles.sheetAddress}>{station.address}</Text>
+          </View>
         </View>
         <TouchableOpacity onPress={onClose}>
-          <Text style={styles.closeBtn}>✕</Text>
+        <Ionicons name="close" size={20} color={Colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
@@ -109,7 +113,10 @@ function StationBottomSheet({
       </View>
 
       <TouchableOpacity style={styles.viewBtn} onPress={onView}>
-        <Text style={styles.viewBtnText}>View Station →</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text style={styles.viewBtnText}>View Station</Text>
+          <Ionicons name="arrow-forward" size={18} color={Colors.navy} />
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -147,7 +154,7 @@ export default function MapScreen() {
 
       {/* Search Bar */}
       <View style={styles.searchBar}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Ionicons name="search" size={16} color={Colors.offline} style={{ marginRight: 8 }} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search for a station..."
