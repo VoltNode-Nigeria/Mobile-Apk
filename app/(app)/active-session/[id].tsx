@@ -3,13 +3,12 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   ActivityIndicator, Alert, Animated,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '../../../src/lib/hooks';
-import { api } from '../../../src/lib/api';
-import { useAuthStore } from '../../../src/store/auth.store';
+import { api, formatNaira } from '../../../src/lib/api';
 import { Colors } from '../../../src/constants';
-import { formatNaira } from '../../../src/lib/api';
 
 function LiveTimer({ startedAt }: { startedAt: string }) {
   const [elapsed, setElapsed] = useState(0);
@@ -25,7 +24,6 @@ function LiveTimer({ startedAt }: { startedAt: string }) {
   const hours = Math.floor(elapsed / 3600);
   const mins = Math.floor((elapsed % 3600) / 60);
   const secs = elapsed % 60;
-
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
@@ -54,10 +52,46 @@ function PulsingDot() {
 
 export default function ActiveSession() {
   const { id: sessionId } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuthStore();
+  const queryClient = useQueryClient();
   const { data: session, isLoading } = useSession(sessionId);
   const [isEnding, setIsEnding] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const currentKwhRef = useRef(0);
+
+  // IoT kWh simulator — runs every 10 seconds while session is ACTIVE
+  useEffect(() => {
+    if (!session || session.status !== 'ACTIVE') return;
+
+    currentKwhRef.current = session.kwhDispensed;
+    const KWH_PER_INTERVAL = 0.3;
+
+    const interval = setInterval(async () => {
+      currentKwhRef.current = Math.round(
+        (currentKwhRef.current + KWH_PER_INTERVAL) * 1000
+      ) / 1000;
+
+      try {
+        await api.post('/iot/ingest', {
+          stationId: session.stationId,
+          bayId: session.bayId,
+          sessionId: session.id,
+          kwhReading: currentKwhRef.current,
+          status: 'OCCUPIED',
+          timestamp: new Date().toISOString(),
+        });
+
+        await api.patch(`/sessions/${session.id}`, {
+          kwhDispensed: currentKwhRef.current,
+        });
+
+        queryClient.invalidateQueries({ queryKey: ['sessions', session.id] });
+      } catch (err) {
+        console.log('kWh update failed:', err);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [session?.id, session?.status]);
 
   const handleEndSession = async () => {
     setIsEnding(true);
@@ -99,14 +133,12 @@ export default function ActiveSession() {
       <View style={styles.kwhContainer}>
         <Text style={styles.kwhValue}>{session.kwhDispensed.toFixed(2)}</Text>
         <Text style={styles.kwhUnit}>kWh dispensed</Text>
-
-        {/* Animated arc hint */}
         <View style={styles.arcHint}>
           <View style={[styles.arcBar, { width: `${Math.min(session.kwhDispensed * 10, 100)}%` }]} />
         </View>
       </View>
 
-      {/* Cost Counter */}
+      {/* Cost */}
       <View style={styles.costContainer}>
         <Text style={styles.costLabel}>Current Cost</Text>
         <Text style={styles.costValue}>{formatNaira(session.costNaira)}</Text>
@@ -140,22 +172,17 @@ export default function ActiveSession() {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statBox}>
-          <View style={styles.paymentMethodRow}>
-            <Ionicons
-              name={isWallet ? 'wallet' : 'card'}
-              size={14}
-              color={Colors.navy}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.paymentMethodText}>{isWallet ? 'Wallet' : 'Card'}</Text>
-          </View>
-          <Text style={styles.statLabel}>Payment</Text>
+          <Ionicons
+            name={isWallet ? 'wallet' : 'card'}
+            size={14}
+            color={Colors.navy}
+          />
+          <Text style={styles.statLabel}>{isWallet ? 'Wallet' : 'Card'}</Text>
         </View>
       </View>
 
-      {/* Live update note */}
       <View style={styles.liveNoteRow}>
-        <Ionicons name="flash" size={14} color={Colors.primary} style={{ marginRight: 6 }} />
+        <Ionicons name="flash" size={13} color={Colors.primary} />
         <Text style={styles.liveNote}>Updates every 10 seconds</Text>
       </View>
 
@@ -169,8 +196,8 @@ export default function ActiveSession() {
           {isEnding ? (
             <ActivityIndicator color={Colors.background} />
           ) : (
-            <View style={styles.endBtnContent}>
-              <Ionicons name="stop-circle" size={20} color={Colors.background} style={{ marginRight: 8 }} />
+            <View style={styles.endBtnInner}>
+              <Ionicons name="stop-circle" size={20} color={Colors.background} />
               <Text style={styles.endBtnText}>End Session</Text>
             </View>
           )}
@@ -237,53 +264,26 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 8,
   },
-  pulsingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-  },
+  pulsingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.primary },
   chargingText: { color: Colors.primary, fontSize: 11, fontWeight: 'bold', letterSpacing: 1 },
 
-  kwhContainer: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-  },
-  kwhValue: {
-    fontSize: 72,
-    fontWeight: 'bold',
-    color: Colors.navy,
-    fontVariant: ['tabular-nums'],
-  },
+  kwhContainer: { alignItems: 'center', paddingVertical: 32, paddingHorizontal: 24 },
+  kwhValue: { fontSize: 72, fontWeight: 'bold', color: Colors.navy },
   kwhUnit: { fontSize: 16, color: Colors.textSecondary, marginTop: 4 },
   arcHint: {
-    width: '100%',
-    height: 4,
-    backgroundColor: Colors.surface,
-    borderRadius: 2,
-    marginTop: 20,
-    overflow: 'hidden',
+    width: '100%', height: 4, backgroundColor: Colors.surface,
+    borderRadius: 2, marginTop: 20, overflow: 'hidden',
   },
-  arcBar: {
-    height: '100%',
-    backgroundColor: Colors.primary,
-    borderRadius: 2,
-  },
+  arcBar: { height: '100%', backgroundColor: Colors.primary, borderRadius: 2 },
 
-  costContainer: { alignItems: 'center', marginBottom: 24 },
+  costContainer: { alignItems: 'center', marginBottom: 20 },
   costLabel: { fontSize: 13, color: Colors.textSecondary, marginBottom: 4 },
   costValue: { fontSize: 36, fontWeight: 'bold', color: Colors.navy },
   creditsUsed: { fontSize: 13, color: Colors.textSecondary, marginTop: 4 },
 
-  timerContainer: { alignItems: 'center', marginBottom: 24 },
+  timerContainer: { alignItems: 'center', marginBottom: 20 },
   timerLabel: { fontSize: 13, color: Colors.textSecondary, marginBottom: 4 },
-  timerText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Colors.textSecondary,
-    fontVariant: ['tabular-nums'],
-  },
+  timerText: { fontSize: 28, fontWeight: 'bold', color: Colors.textSecondary },
 
   statsRow: {
     flexDirection: 'row',
@@ -291,10 +291,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  statBox: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 13, fontWeight: '600', color: Colors.navy, marginBottom: 2 },
+  statBox: { flex: 1, alignItems: 'center', gap: 4 },
+  statValue: { fontSize: 13, fontWeight: '600', color: Colors.navy },
   statLabel: { fontSize: 11, color: Colors.textSecondary },
   statDivider: { width: 1, backgroundColor: Colors.border },
 
@@ -302,12 +302,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    gap: 4,
+    marginBottom: 20,
   },
-  liveNote: {
-    fontSize: 12,
-    color: Colors.offline,
-  },
+  liveNote: { fontSize: 12, color: Colors.offline },
 
   endContainer: { paddingHorizontal: 24, paddingBottom: 40 },
   endBtn: {
@@ -316,10 +314,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
   },
-  endBtnContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  endBtnInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   endBtnText: { color: Colors.background, fontSize: 16, fontWeight: 'bold' },
-  paymentMethodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  paymentMethodText: { fontSize: 13, fontWeight: '600', color: Colors.navy },
 
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -328,41 +324,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-  modal: {
-    backgroundColor: Colors.background,
-    borderRadius: 20,
-    padding: 24,
-    width: '100%',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.navy,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  modalBody: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
+  modal: { backgroundColor: Colors.background, borderRadius: 20, padding: 24, width: '100%' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.navy, marginBottom: 12, textAlign: 'center' },
+  modalBody: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginBottom: 24, lineHeight: 22 },
   modalButtons: { flexDirection: 'row', gap: 12 },
   modalCancel: {
-    flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
+    flex: 1, backgroundColor: Colors.surface, borderRadius: 12,
+    paddingVertical: 14, alignItems: 'center',
   },
   modalCancelText: { color: Colors.textPrimary, fontWeight: '600' },
   modalConfirm: {
-    flex: 1,
-    backgroundColor: Colors.error,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
+    flex: 1, backgroundColor: Colors.error, borderRadius: 12,
+    paddingVertical: 14, alignItems: 'center',
   },
   modalConfirmText: { color: Colors.background, fontWeight: 'bold' },
 });

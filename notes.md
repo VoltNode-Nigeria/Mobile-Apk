@@ -2,7 +2,7 @@
 
 
 
-git remote set-url second https://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@github.com/VoltNode-Nigeria/Mobile-Apk.git
+git remote set-url second https://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@github.com/VoltNode-Nigeria/Mobile-Apk.git
 
 
 
